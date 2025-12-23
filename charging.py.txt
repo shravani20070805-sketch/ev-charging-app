@@ -1,0 +1,121 @@
+import flet as ft
+
+def main(page: ft.Page):
+    page.title = "EV ChargeHub"
+    page.theme_mode = ft.ThemeMode.LIGHT
+    page.window_width = 390
+    page.window_height = 844
+    page.padding = 0
+    page.spacing = 0
+
+    # --- App State ---
+    selected_station = ft.Text("", weight="bold", size=20)
+    selected_price = ft.Text("")
+
+    # --- Functions ---
+    def show_station(e, name, price, status):
+        selected_station.value = name
+        selected_price.value = f"Price: {price}/kWh • Status: {status}"
+        bottom_sheet.open = True
+        page.update()
+
+    def handle_book(e):
+        page.show_snack_bar(ft.SnackBar(ft.Text(f"Successfully booked {selected_station.value}!")))
+        bottom_sheet.open = False
+        page.update()
+
+    # --- UI Components ---
+    
+    # Bottom Sheet for Station Details
+    bottom_sheet = ft.BottomSheet(
+        ft.Container(
+            ft.Column(
+                [
+                    selected_station,
+                    selected_price,
+                    ft.Row([
+                        ft.Icon(ft.icons.ELECTRIC_CAR, color="green"),
+                        ft.Text("Supercharger (150kW)"),
+                    ]),
+                    ft.ElevatedButton(
+                        "Confirm Booking", 
+                        on_click=handle_book,
+                        style=ft.ButtonStyle(
+                            bgcolor=ft.colors.GREEN_600,
+                            color=ft.colors.WHITE,
+                        ),
+                        width=400,
+                    ),
+                ],
+                tight=True,
+                spacing=20,
+            ),
+            padding=30,
+            bgcolor=ft.colors.WHITE,
+        ),
+    )
+    page.overlay.append(bottom_sheet)
+
+    # Simulated Map (Stack of pins)
+    map_view = ft.Stack(
+        [
+            # Background
+            ft.Container(bgcolor=ft.colors.BLUE_GREY_50, expand=True),
+            
+            # Pin 1
+            ft.Container(
+                content=ft.IconButton(
+                    icon=ft.icons.LOCATION_ON,
+                    icon_color="green",
+                    on_click=lambda e: show_station(e, "VoltZone Plaza", "$0.45", "Available")
+                ),
+                top=150, left=100
+            ),
+            
+            # Pin 2
+            ft.Container(
+                content=ft.IconButton(
+                    icon=ft.icons.LOCATION_ON,
+                    icon_color="orange",
+                    on_click=lambda e: show_station(e, "EcoCharge Hub", "$0.35", "Busy")
+                ),
+                top=400, left=250
+            ),
+        ],
+        expand=True,
+    )
+
+    # Search Bar
+    search_bar = ft.Container(
+        content=ft.TextField(
+            prefix_icon=ft.icons.SEARCH,
+            hint_text="Search chargers...",
+            border_radius=15,
+            bgcolor=ft.colors.WHITE,
+        ),
+        padding=20,
+    )
+
+    # Bottom Navigation
+    nav_bar = ft.NavigationBar(
+        destinations=[
+            ft.NavigationDestination(icon=ft.icons.MAP, label="Explore"),
+            ft.NavigationDestination(icon=ft.icons.BOOKMARK, label="Bookings"),
+            ft.NavigationDestination(icon=ft.icons.PERSON, label="Profile"),
+        ],
+        selected_index=0,
+    )
+
+    # Assemble App
+    page.add(
+        ft.Column(
+            [
+                search_bar,
+                ft.Container(content=map_view, expand=True),
+            ],
+            expand=True,
+        ),
+        nav_bar
+    )
+
+ft.app(target=main)
